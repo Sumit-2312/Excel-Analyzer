@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import verifyToken from './middleware.js';
 import authRouter from './Routes/authrouter.js';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -12,7 +15,7 @@ app.use('/auth',authRouter);
 app.use(verifyToken);
 
 
-mongoose.connect(process.env.MONOG_URI)
+mongoose.connect(process.env.MONGO_URI)
 .then(()=>{
     console.log("Connected to MongoDB");
     app.listen(3000,()=>{
