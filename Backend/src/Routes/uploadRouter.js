@@ -2,8 +2,10 @@ import express from 'express';
 import multer from 'multer';
 import storage from '../utils/diskStorage.js';
 import fileFilter from '../utils/filefilter.js';
-import { Uploads } from '../db.js';
+import { Uploads, Users } from '../db.js';
 import fs from 'fs';
+import cloudinary from '../utils/cloudinary.js';
+
 
 const uploadRouter = express.Router();
 
@@ -13,7 +15,7 @@ const upload = multer({
     storage : storage,
     fileFilter: fileFilter,
     limits: {
-        fileSize : 1024 * 1024 * 5 // 5 MB file size limit
+        fileSize : 1024 * 1024 * 1 // 1 MB file size limit
     }
 });
 
@@ -21,7 +23,7 @@ const upload = multer({
 
 // All these request will be handled by the middleware before reaching to this point
 // so we will assume that the user is authenticated and userId is available in req.userId
-// to upload the file in the express server , we need the multer package
+// to upload the file in the expre ss server , we need the multer package
 
 
 const singleUpload = (req, res) =>
@@ -30,7 +32,7 @@ const singleUpload = (req, res) =>
       if (err) reject(err);
       else resolve();
     });
-  });
+});
 
 uploadRouter.post('/', async (req, res) => {
   try {
@@ -47,21 +49,22 @@ uploadRouter.post('/', async (req, res) => {
 
 
 
-    const fileBuffer = fs.readFileSync(data.path); // convert the file data to a buffer
+    const result = await cloudinary.uploader.upload(data.path,{
+      resource_type: 'raw'
+    });
+
+
 
    const newFile = await Uploads.create({
         userId: req.userId,
         filename: data.filename,
         originalname : data.originalname,
-        file:{
-            data: fileBuffer,
-            contentType: data.mimetype
-        },
-        path: data.path,
+        fileUrl : result.secure_url,
         size: data.size
     })
 
-     fs.unlinkSync(req.file.path); // delete the file from the server after uploading to the database
+    fs.unlinkSync(data.path); // delete the file from the server after uploading to cloudinary
+
 
     console.log('Uploaded file:', req.file);
 
@@ -87,27 +90,25 @@ uploadRouter.post('/', async (req, res) => {
   }
 });
 
-uploadRouter.get('/download/:id', async (req, res) => {
-  try {
-    const file = await Uploads.findById(req.params.id);
+// returned all files with their url, when we click/redirect on url , file will be downloaded
+uploadRouter.get('/',async(req,res)=>{
 
-    if (!file) {
-      return res.status(404).json({ message: 'File not found' });
-    }
+  try{
+    const user = await Users.findById(req.userId);
+    if(!user) return res.status(404).json({message: "User not found"});
 
-    res.set({
-      'Content-Type': file.file.contentType,
-      'Content-Disposition': `attachment; filename="${file.originalname}"`
-    });
+    const files = await Uploads.find({userId: req.userId}).sort({uploadDate: 1}); // 1 for ascending order means the oldest file will be first
 
-    res.send(file.file.data);
-
-  } catch (error) {
-    console.error('Download error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(200).json({
+      message: "Files fetched successfully",
+      files: files
+    })
+  }catch(err){
+    console.error('Error fetching files:', err);
+    return res.status(500).json({ message: 'Server error', error: err });
   }
-});
 
+})
 
 
 export default uploadRouter;

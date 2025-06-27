@@ -5,7 +5,8 @@ const userSchema = new Schema({
     username: { type : String, required: true, unique: true , min:[3,"Minimum length of name should be 3"] , max:[20,"Max length of name should be 20"] },
     password: {type: String, required: true, min:[6,"Minimum length of password should be 6"] , max:[20,"Max length of password should be 20"]},
     email: { type: String, required: true, unique: true},
-    role: {type: String , required: true, enum :['admin','user'], default: 'user'}
+    role: {type: String , required: true, enum :['admin','user'], default: 'user'},
+    blocked: {type: Boolean , default : false}
 })
 
 export const Users = mongoose.model('Users', userSchema);
@@ -18,12 +19,8 @@ const UploadSchema = new Schema({
   userId:     { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   filename:   { type: String, required: true },
   originalname: { type: String, required : true },
-  file: {
-    data: {type: Buffer, required: true},                
-    contentType: {type:String, required: true}
-  },
+  fileUrl : { type: String , required: true},
   uploadDate: { type: Date, default: Date.now },
-  path : {type :String , required: true},
   size: {type: Number}
 });
 
