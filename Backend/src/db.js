@@ -6,7 +6,6 @@ const userSchema = new Schema({
     password: {type: String, required: true, min:[6,"Minimum length of password should be 6"] , max:[20,"Max length of password should be 20"]},
     email: { type: String, required: true, unique: true},
     role: {type: String , required: true, enum :['admin','user'], default: 'user'},
-    blocked: {type: Boolean , default : false}
 })
 
 export const Users = mongoose.model('Users', userSchema);
@@ -25,3 +24,12 @@ const UploadSchema = new Schema({
 });
 
 export const Uploads = mongoose.model('Uploads', UploadSchema);
+
+
+
+const blockedSchema = new Schema({
+    email: { type: String, required: true, unique: true},
+    blocked: {type: Boolean , default : false}
+})
+
+export const Blocked = mongoose.model('Blocked',blockedSchema);
