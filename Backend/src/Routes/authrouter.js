@@ -1,6 +1,9 @@
 import express from 'express';
 import { Users } from '../db.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 const authRouter = express.Router();
 
 authRouter.post('/signup',async (req,res)=>{
@@ -30,16 +33,21 @@ authRouter.post('/signup',async (req,res)=>{
 
 authRouter.post("/login",async(req,res)=>{
     const {email,password,role} = req.body;
+
     if(!email || !password || !role){
         return res.status(400).json({message: "All fields are required"});
     }
     try{
         const user = await Users.findOne({email});
         if(!user) return res.status(400).json({message: "User does not exist"});
+
         if( user.role !== role ) return res.status(403).json({message: "Access denied for this role"});
         const isMatch = await bcrypt.compare(password, user.password);              
         if(!isMatch) return res.status(400).json({message: "Invalid password"});
-        return res.status(200).json({message: "Login successful",user: {id: user._id, username: user.username, email:user.email, role: user.rolr}});
+
+        const token = jwt.sign({id: user._id},process.env.JWT_SECRET,{expiresIn: '7d'});
+
+        return res.status(200).json({message: "Login successful",user: {id: user._id, username: user.username, email:user.email, role: user.role}, token: token});
     }
     catch(err){
         return res.status(500).json({message: "Internal server error", error: err.message});
