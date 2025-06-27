@@ -20,10 +20,34 @@ const upload = multer({
 // All these request will be handled by the middleware before reaching to this point
 // so we will assume that the user is authenticated and userId is available in req.userId
 // to upload the file in the express server , we need the multer package
-uploadRouter.post("/",upload.single('excel files'),(req,res)=>{
-    console.log("File uploaded successfully", req.file);
-    res.send("uploaded successfully");
-})
+uploadRouter.post('/', (req, res, next) => {
+
+// Error handling for multer
+  upload.single('excel')(req, res, function (err) {
+
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+        return res.status(400).json({ message: 'Only one file is allowed!' });
+      }
+      return res.status(400).json({ message: err.message });
+    } else if (err) {
+      return res.status(500).json({ message: 'Unknown server error', error: err });
+    }
+
+
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'pleas upload a file ' });
+    }
+
+    console.log('Uploaded file:', req.file);
+    res.status(200).json({ message: 'File uploaded successfully' });
+
+  });
+
+
+});
+
 
 
 
