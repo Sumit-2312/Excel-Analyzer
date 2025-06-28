@@ -1,3 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-steel-custom text-white font-inter;
+    background: linear-gradient(135deg, #1F1C2C 0%, #2D2B42 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-glass-light backdrop-blur-md border border-white/10 rounded-xl shadow-xl;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-gray-custom to-white bg-clip-text text-transparent;
+  }
+  
+  .btn-primary {
+    @apply bg-gradient-to-r from-gray-custom to-white/80 text-steel-custom font-semibold px-6 py-3 rounded-lg hover:from-white hover:to-gray-custom transition-all duration-300 transform hover:scale-105;
+  }
+  
+  .btn-secondary {
+    @apply bg-glass-light border border-white/20 text-white font-medium px-6 py-3 rounded-lg hover:bg-glass-dark transition-all duration-300;
+  }
+  
+  .input-field {
+    @apply bg-glass-light border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:border-gray-custom transition-all duration-300;
+  }
+  
+  /* Select dropdown specific styling */
+  select.input-field {
+    @apply bg-glass-light border border-white/20 text-white;
+  }
+  
+  select.input-field option {
+    @apply bg-steel-custom text-white;
+  }
+  
+  select.input-field:focus {
+    @apply border-gray-custom;
+  }
+  
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-glass-light transition-all duration-300 cursor-pointer;
+  }
+  
+  .sidebar-item.active {
+    @apply bg-glass-light border border-white/20;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-steel-custom;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-custom rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-white/60;
+}
