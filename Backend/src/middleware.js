@@ -1,21 +1,36 @@
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';  
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 dotenv.config();
 
-export default async function verifyToken(req,res,next){
-    const token = req.headers['authorization'];
-    if(!token) {
-        return res.status(401).json({message: "No token provided"});
+// Get JWT secret from environment
+const JWT_SECRET = process.env.JWT_SECRET;
+
+export default async function verifyToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  // Extract token from "Bearer <token>" format
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.substring(7)
+    : authHeader;
+
+  if (!token) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token" });
     }
-    try{
-        const decoded = jwt.verify(token,process.env.JWT_SECRET);
-        if(!decoded){
-            return res.status(401).json({message: "Invalid token"});
-        }
-        req.userId = decoded.id;
-        next();
-    }
-    catch(err){
-        return res.status(500).json({message: "Failed to authenticate token",error:err.message});
-    }
+    req.userId = decoded.id;
+    next();
+  } catch (err) {
+    console.error("Token verification error:", err);
+    return res
+      .status(401)
+      .json({ message: "Failed to authenticate token", error: err.message });
+  }
 }
